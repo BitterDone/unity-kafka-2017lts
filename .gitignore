@@ -10,8 +10,7 @@
 /[Ll]ogs/
 /[Mm]emoryCaptures/
 /HololensDemo/app/
-/2017 Holo/app/
-/2017 Holo/app4.6/
+/app/
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
