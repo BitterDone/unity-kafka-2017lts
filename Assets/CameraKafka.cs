@@ -33,7 +33,7 @@ public class CameraKafka : MonoBehaviour {
 	void Start()
 	{
 		Debug.Log("Start");
-		sendAsync();
+		startAsync();
 		// sendSync();
 	}
 
@@ -50,55 +50,19 @@ public class CameraKafka : MonoBehaviour {
 
 	// The response from the remote device.
 	private static String response = String.Empty;
+	static IPHostEntry ipHost;
+	static IPAddress ipAddr;
+	static IPEndPoint remoteEP;
+	static Socket client;
 
-	private static void sendAsync()
+	private static void startAsync()
 	{
 		// Connect to a remote device.
 		try
 		{
-			/* // Establish the remote endpoint for the socket.
-			// The name of the 
-			// remote device is "host.contoso.com".
-			IPHostEntry ipHostInfo = Dns.Resolve("host.contoso.com");
-			IPAddress ipAddress = ipHostInfo.AddressList[0];
-			IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
-
-			// Create a TCP/IP socket.
-			Socket client = new Socket(AddressFamily.InterNetwork,
-				SocketType.Stream, ProtocolType.Tcp);
-			*/
-
-			// from sync example
-			IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
-			IPAddress ipAddr = ipHost.AddressList[0];
-			IPEndPoint remoteEP = new IPEndPoint(ipAddr, 11111);
-
-			// Creation TCP/IP Socket using  
-			// Socket Class Costructor 
-			Socket client = new Socket(ipAddr.AddressFamily,
-					   SocketType.Stream, ProtocolType.Tcp);
-
-			// Connect to the remote endpoint.
-			client.BeginConnect(remoteEP,
-				new AsyncCallback(ConnectCallback), client);
-			connectDone.WaitOne();
-
-			// Send test data to the remote device.
-			Send(client, "This is a test<EOF>");
-			sendDone.WaitOne();
-
-			// Receive the response from the remote device.
-			Receive(client);
-			receiveDone.WaitOne();
-
-			// Write the response to the console.
-			string msg = String.Format("Response received : {0}", response);
-			Console.WriteLine(msg);
-			Debug.Log(msg);
-
-			// Release the socket.
-			client.Shutdown(SocketShutdown.Both);
-			client.Close();
+			initAsync();
+			sendAsync();
+			closeAsync();
 
 		}
 		catch (Exception e)
@@ -109,6 +73,44 @@ public class CameraKafka : MonoBehaviour {
 		}
 	}
 
+	private static void closeAsync()
+	{
+		// Release the socket.
+		client.Shutdown(SocketShutdown.Both);
+		client.Close();
+	}
+
+	private static void sendAsync()
+	{	// Connect to the remote endpoint.
+		client.BeginConnect(remoteEP,
+			new AsyncCallback(ConnectCallback), client);
+		connectDone.WaitOne();
+
+		// Send test data to the remote device.
+		Send(client, "This is a test<EOF>");
+		sendDone.WaitOne();
+
+		// Receive the response from the remote device.
+		Receive(client);
+		receiveDone.WaitOne();
+
+		// Write the response to the console.
+		string msg = String.Format("Response received : {0}", response);
+		Console.WriteLine(msg);
+		Debug.Log(msg);
+	}
+	private static void initAsync() {
+		// from sync example
+		ipHost = Dns.GetHostEntry(Dns.GetHostName());
+		ipAddr = ipHost.AddressList[0];
+		remoteEP = new IPEndPoint(ipAddr, 11111);
+
+		// Creation TCP/IP Socket using  
+		// Socket Class Costructor 
+		client = new Socket(ipAddr.AddressFamily,
+				   SocketType.Stream, ProtocolType.Tcp);
+
+	}
 	private static void ConnectCallback(IAsyncResult ar)
 	{
 		try
